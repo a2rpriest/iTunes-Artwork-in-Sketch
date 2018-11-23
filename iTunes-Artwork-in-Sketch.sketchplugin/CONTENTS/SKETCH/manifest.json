@@ -16,7 +16,7 @@
     "title" : "iTunes Artwork"
   },
   "identifier" : "com.example.sketch.itunesartwork",
-  "version" : "0.11",
+  "version" : "1.0",
   "description" : "Plugin to fetch artworks by their album name",
   "authorEmail" : "",
   "compatibleVersion" : "3",

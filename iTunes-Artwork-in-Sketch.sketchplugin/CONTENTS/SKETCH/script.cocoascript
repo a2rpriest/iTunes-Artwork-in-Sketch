@@ -12,6 +12,7 @@ var onRun = function(context) {
     while(versionNumber.length != 3) {
       versionNumber += "0"
     }
+    log(versionNumber)
     return parseInt(versionNumber)
   }
 
@@ -33,7 +34,7 @@ var onRun = function(context) {
     query = [doc askForUserInput: 'Enter album name:' initialValue: '']
     // if user entered nothing
     if (query == '') {
-      doc.showMessage('You forgot to enter the query :-(')
+      doc.showMessage('Please enter a query.')
       getQuery()
     // if user cancelled a box
     } else if (query === null) {
@@ -45,9 +46,6 @@ var onRun = function(context) {
   }
 
   function fetchCovers(query) { // fetching cover arts
-    //url = 'http://ws.audioscrobbler.com/2.0/?method=album.search&album=' + encodeURIComponent(query) + '&api_key=2486cfd15a30b079cde22315f0268a2d&format=json'
-    //url = 'https://itunes.apple.com/search?' + encodeURIComponent(query) + '&api_key=2486cfd15a30b079cde22315f0268a2d&format=json'
-    //log(query);
     queryList = query.split(" ");
     //log(queryList);
     var queryPlus = queryList[0];
@@ -118,30 +116,27 @@ var onRun = function(context) {
     coversCollection = loadCovers(selection.count())
     for (var i = 0; i < selection.count(); i++) {
       layer = selection[i]
-      if ([layer class] == MSShapeGroup) {
-        imageData = coversCollection[i]
-        fill = layer.style().fills().firstObject()
-        fill.setFillType(4)
-        /*
-        border = layer.style().borders().firstObject()
-        if (border != null) {
-          border.thickness = 0;
-        }
-        */
-
-
-
-        if (sketchVersion > 370) {
-          //image = [[MSImageData alloc] initWithImage: imageData convertColorSpace: false]]
-          image = [[MSImageData alloc] initWithImage: imageData]]
-          fill.setImage(image)
-        } else if(sketchVersion < 350) {
-          [fill setPatternImage:imageData collection:[[fill documentData] images]]
-        } else {
-          fill.setPatternImage(imageData)
-        }
-        fill.setPatternFillType(1)
+      imageData = coversCollection[i]
+      fill = layer.style().fills().firstObject()
+      fill.setFillType(4)
+      /*
+      border = layer.style().borders().firstObject()
+      if (border != null) {
+        border.thickness = 0;
       }
+      */
+
+      if (sketchVersion > 370) {
+        //image = [[MSImageData alloc] initWithImage: imageData convertColorSpace: false]]
+        image = [[MSImageData alloc] initWithImage: imageData]]
+        fill.setImage(image)
+      } else if(sketchVersion < 350) {
+        [fill setPatternImage:imageData collection:[[fill documentData] images]]
+      } else {
+        fill.setPatternImage(imageData)
+      }
+      fill.setPatternFillType(1)
+
     }
   }
 
