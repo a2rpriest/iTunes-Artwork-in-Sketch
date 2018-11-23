@@ -17,5 +17,5 @@ This is a simple plugin for Sketch to download album artwork from iTunes.
 
 
 
-Attribution:
+## Attribution:
 Some code taken from Sketch Artwork Fetcher https://github.com/mmth/sketch-artwork-fetcher. Check out their plugin to download artwork from Last.fm.
