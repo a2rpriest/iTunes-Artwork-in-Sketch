@@ -1,0 +1,157 @@
+var onRun = function(context) {
+  var doc = context.document,
+  selection = context.selection,
+
+  coversCollection = [],
+  coversUrls = [],
+  urlPattern = /^https?:\/\/(?:[aA-zZ\-]+\.)+[a-z]{2,6}(?:\/[^/#?]+)+\.(?:jpg|gif|png)$/ig
+
+  function getSketchVersionNumber() {
+    const version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]
+    var versionNumber = version.stringByReplacingOccurrencesOfString_withString(".", "") + ""
+    while(versionNumber.length != 3) {
+      versionNumber += "0"
+    }
+    return parseInt(versionNumber)
+  }
+
+  var sketchVersion = getSketchVersionNumber()
+
+  function alert(msg, title) {
+    title = title || "Error"
+    app = [NSApplication sharedApplication]
+    [app displayDialog: msg withTitle: title]
+  }
+
+  function get(url) {
+    var request = NSURLRequest.requestWithURL(NSURL.URLWithString(url))
+    var response = NSURLConnection.sendSynchronousRequest_returningResponse_error(request, null, null)
+    return response;
+  }
+
+  function getQuery() {
+    query = [doc askForUserInput: 'Enter album name:' initialValue: '']
+    // if user entered nothing
+    if (query == '') {
+      doc.showMessage('You forgot to enter the query :-(')
+      getQuery()
+    // if user cancelled a box
+    } else if (query === null) {
+      return
+    // finally, everything is ok
+    } else {
+      fetchCovers(query)
+    }
+  }
+
+  function fetchCovers(query) { // fetching cover arts
+    //url = 'http://ws.audioscrobbler.com/2.0/?method=album.search&album=' + encodeURIComponent(query) + '&api_key=2486cfd15a30b079cde22315f0268a2d&format=json'
+    //url = 'https://itunes.apple.com/search?' + encodeURIComponent(query) + '&api_key=2486cfd15a30b079cde22315f0268a2d&format=json'
+    //log(query);
+    queryList = query.split(" ");
+    //log(queryList);
+    var queryPlus = queryList[0];
+    for (var i = 0; i < queryList.length; i++) {
+      queryPlus += "+" + queryList[i];
+    }
+    //log(queryPlus);
+    url = 'https://itunes.apple.com/search?term=' + queryPlus + '&entity=album';
+    json = JSON.parse(NSString.alloc().initWithData_encoding(get(url), NSUTF8StringEncoding));
+    //log(json);
+    results = json.results;
+    count = json.resultCount;
+    //albums = json.results.albummatches.album // getting list of albums
+    //log(results);
+    //log(count);
+
+    for (i in results) {
+      result = results[i];
+      //log(result);
+      artistId = result.artistId;
+      //log(artistId);
+      collectionType = result.collectionType;
+      if (collectionType == "Album") {
+        collectionName = result.collectionName
+        //log(collectionName);
+
+        albumURL = result.artworkUrl100;
+        fullResURL = getFullResURL(albumURL);
+        //log(fullResURL);
+        coversUrls.push(fullResURL);
+      }
+    }
+    /*
+    if (albums.length > 0) {
+      albums.map(function (album) {
+        image = album.image.pop()["#text"]
+        if (image !== "" && image !== undefined) {
+          coversUrls.push(image);
+        }
+      })
+    }
+    */
+    (coversUrls.length > 0) ? insertToSketch() : doc.showMessage("Nothing found for '" + query + "' query.")
+  }
+
+  function getFullResURL(url) {
+    var urlStart = "https://is5-ssl.mzstatic.com/image/thumb/Music";
+    var urlMiddle = url.slice(46, -21);
+    var urlEnd = "/source/100000x100000-999.jpg"
+    var fullResURL = urlStart + urlMiddle + urlEnd;
+
+    return fullResURL;
+  }
+
+  function loadCovers(layersAmount) {
+    numberOfCovers = coversUrls.length
+    for (var i = 0; i < layersAmount; i++) {
+      //r = Math.floor(Math.random() * numberOfCovers)
+      imageUrl = coversUrls[i]
+      newImage = [[NSImage alloc] initWithContentsOfURL:[NSURL URLWithString: imageUrl]]
+      coversCollection.push(newImage)
+    }
+    return coversCollection;
+  }
+
+  function insertToSketch() {
+    allLayers = doc.currentPage().layers()
+    coversCollection = loadCovers(selection.count())
+    for (var i = 0; i < selection.count(); i++) {
+      layer = selection[i]
+      if ([layer class] == MSShapeGroup) {
+        imageData = coversCollection[i]
+        fill = layer.style().fills().firstObject()
+        fill.setFillType(4)
+        /*
+        border = layer.style().borders().firstObject()
+        if (border != null) {
+          border.thickness = 0;
+        }
+        */
+
+
+
+        if (sketchVersion > 370) {
+          //image = [[MSImageData alloc] initWithImage: imageData convertColorSpace: false]]
+          image = [[MSImageData alloc] initWithImage: imageData]]
+          fill.setImage(image)
+        } else if(sketchVersion < 350) {
+          [fill setPatternImage:imageData collection:[[fill documentData] images]]
+        } else {
+          fill.setPatternImage(imageData)
+        }
+        fill.setPatternFillType(1)
+      }
+    }
+  }
+
+  function activate() {
+    if ([selection count] == 0) {
+      doc.showMessage('Select at least one shape.')
+    } else {
+      getQuery()
+    }
+  }
+
+  activate();
+};

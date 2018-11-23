@@ -1,0 +1,1 @@
+# iTunes Artwork in Sketch

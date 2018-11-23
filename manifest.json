@@ -1,0 +1,25 @@
+{
+  "author" : "Aaron Campbell",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "handler" : "onRun",
+      "shortcut" : "ctrl shift 6",
+      "name" : "Fetch Artwork from iTunes",
+      "identifier" : "iTunesArtwork"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "iTunesArtwork"
+    ],
+    "title" : "iTunes Artwork"
+  },
+  "identifier" : "com.example.sketch.itunesartwork",
+  "version" : "0.11",
+  "description" : "Plugin to fetch artworks by their album name",
+  "authorEmail" : "",
+  "compatibleVersion" : "3",
+  "homepage": "",
+  "name" : "iTunes Artwork"
+}
